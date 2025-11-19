@@ -62,53 +62,60 @@ export default function App() {
     }
   }
 
-  const onSave = async (name, payload) => {
-    if (!name?.trim()) return
-    const n = name.trim()
-    const body = { name: n, ...payload }
+  const onSave = async (nameInput, payload) => {
+  if (!nameInput?.trim()) return
+  const n = nameInput.trim()
 
-    try {
-      const existing = all[n]
-      let res
+  
+  const { _id, name, ...rest } = payload || {}
+  const body = { name: n, ...rest }
 
-      if (existing) {
-        // оновити місто
-        res = await fetch(`${API_URL}/${existing._id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body)
-        })
-      } else {
-        // створити нове місто
-        res = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body)
-        })
-      }
+  console.log(nameInput);
 
-      if (!res.ok) {
-        console.error("Save error", await res.text())
-        return
-      }
+  try {
+    const existing = all[n]  
 
-      const saved = await res.json()
-
-      setCities((prev) => {
-        const idx = prev.findIndex((c) => c._id === saved._id)
-        if (idx === -1) return [...prev, saved]
-        const arr = [...prev]
-        arr[idx] = saved
-        return arr
+    let res
+    if (existing) {
+      
+      res = await fetch(`${API_URL}/${existing._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
       })
-
-      setCity(saved.name)
-      save("lastCity", saved.name)
-      setEdit(false)
-    } catch (e) {
-      console.error("Save error", e)
+    } else {
+      
+      res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      })
     }
+
+    if (!res.ok) {
+      console.error("Save error", await res.text())
+      return
+    }
+
+    const saved = await res.json()
+
+    setCities((prev) => {
+      const idx = prev.findIndex((c) => c._id === saved._id)
+      if (idx === -1) return [...prev, saved]
+      const arr = [...prev]
+      arr[idx] = saved
+      return arr
+    })
+
+    setCity(saved.name)
+    save("lastCity", saved.name)
+    setEdit(false)
+  } catch (e) {
+    console.error("Save error", e)
   }
+}
+
+
 
   const items =
     !data || !data.forecast7
